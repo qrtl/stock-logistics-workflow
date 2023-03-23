@@ -1,0 +1,1 @@
+When creating or updating a stock.quant record with serial management products , the constraint checks if serial number already exists. If a duplicate is found, the user get a warning message and the record is not saved.
