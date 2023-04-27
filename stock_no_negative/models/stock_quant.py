@@ -12,6 +12,8 @@ class StockQuant(models.Model):
 
     @api.constrains("product_id", "quantity")
     def check_negative_qty(self):
+        if self.env.context.get("no_negative_check"):
+            return
         p = self.env["decimal.precision"].precision_get("Product Unit of Measure")
         check_negative_qty = (
             config["test_enable"] and self.env.context.get("test_stock_no_negative")
