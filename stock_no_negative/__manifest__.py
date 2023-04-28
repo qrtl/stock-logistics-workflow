@@ -11,7 +11,7 @@
     "summary": "Disallow negative stock levels by default",
     "author": "Akretion,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-workflow",
-    "depends": ["stock"],
+    "depends": ["stock", "mrp_subcontracting"],
     "data": ["views/product_product_views.xml", "views/stock_location_views.xml"],
     "installable": True,
 }

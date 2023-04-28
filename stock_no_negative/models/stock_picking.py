@@ -4,12 +4,16 @@
 
 from odoo import models
 
+
 class StockPicking(models.Model):
-    _inherit = 'stock.picking'
+    _inherit = "stock.picking"
 
     def _action_done(self):
-        for picking in self:
-            for move in picking.move_ids_without_package:
-                if move.state == "assigned":
-                    picking = picking.with_context(no_negative_check=True)
-            return super(StockPicking, picking)._action_done()
+        pickings = self.filtered(lambda x: not x._is_subcontract())
+        res = super(StockPicking, pickings)._action_done()
+        for picking in self - pickings:
+            if picking._is_subcontract():
+                super(
+                    StockPicking, picking.with_context(no_negative_check=True)
+                )._action_done()
+        return res
