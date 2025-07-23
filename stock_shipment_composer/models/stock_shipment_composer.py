@@ -62,6 +62,8 @@ class StockShipmentComposer(models.Model):
             ("done", "Done"),
             ("cancel", "Cancelled"),
         ],
+        compute="_compute_state",
+        store=True,
         string="Status",
         default="draft",
         copy=False,
@@ -89,12 +91,14 @@ class StockShipmentComposer(models.Model):
         readonly=False,
         precompute=True,
     )
-    move_ids = fields.Many2many("stock.move", compute="_compute_move_ids")
+    move_ids = fields.Many2many("stock.move", compute="_compute_move_ids", store=True)
     sale_line_ids = fields.Many2many("sale.order.line", compute="_compute_move_ids")
     show_check_availability = fields.Boolean(compute="_compute_move_ids")
     show_validate = fields.Boolean(compute="_compute_show_validate")
     date_done = fields.Datetime(
         "Date of Validation",
+        compute="_compute_state",
+        store=True,
         copy=False,
         readonly=True,
         help="Date at which the composer has been validated.",
@@ -110,6 +114,22 @@ class StockShipmentComposer(models.Model):
         for rec in self:
             rec.amount_total = sum(rec.line_ids.mapped("amount_subtotal"))
             rec.amount_declared_total = sum(rec.line_ids.mapped("amount_declared"))
+
+    @api.depends("move_ids", "move_ids.state")
+    def _compute_state(self):
+        recs = self.filtered(lambda x: x.state not in ["cancel", "done"])
+        for rec in recs:
+            if not rec.move_ids:
+                continue
+            if all(move.state == "cancel" for move in rec.move_ids):
+                rec.state = "cancel"
+                continue
+            if rec.move_ids.filtered(
+                lambda x: x.shipment_composer_id == rec
+                and x.state in ["cancel", "done"]
+            ):
+                rec.state = "done"
+                rec.date_done = fields.Datetime.now()
 
     @api.depends("line_ids", "line_ids.move_id.picking_id.scheduled_date")
     def _compute_scheduled_date(self):
@@ -241,16 +261,16 @@ class StockShipmentComposer(models.Model):
                     doc=self.name,
                 )
             )
-        self.write({"date_done": fields.Datetime.now(), "state": "done"})
         # Run sanity_check here and skip the one in button_validate().
         pickings._sanity_check(separate_pickings=False)
         pickings.actual_date = self.actual_date
+        # Set the composer on all moves of the pickings before validation
+        self.move_ids.shipment_composer_id = self
         context = {"skip_sanity_check": True, "validated_by_composer": True}
         return pickings.with_context(skip_immediate=True, **context).button_validate()
 
     def action_view_operations(self):
         action = self.env["ir.actions.actions"]._for_xml_id("stock.stock_move_action")
-        # action['views'] = [(self.env.ref('stock.view_move_tree').id, 'tree')]
         action["context"] = self.env.context
         action["domain"] = [("id", "in", self.move_ids.ids)]
         return action

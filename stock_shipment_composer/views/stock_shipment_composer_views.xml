@@ -151,6 +151,7 @@
                                         name="move_id"
                                         domain="[('partner_id','=',parent.partner_id),('picking_type_id','=',parent.picking_type_id),('state','not in',['done','cancel']),('id','not in',parent.move_ids)]"
                                         context="{'is_shipment_composer': True}"
+                                        help="The number in brackets represents the unallocated quantity to composers in 'In Progress' or 'Done' states."
                                     />
                                     <field name="picking_id" optional="show" />
                                     <field name="quantity" />

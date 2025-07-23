@@ -58,7 +58,10 @@ class StockShipmentComposerLine(models.Model):
         "quantity", "move_id.composer_line_qty", "move_id.product_uom_qty", "state"
     )
     def _check_quantity(self):
-        for rec in self:
+        for rec in self.filtered(
+            lambda x: x.state in ["draft", "in_progress"]
+            or x.move_state not in ["done", "cancel"]
+        ):
             if (
                 float_compare(
                     rec.move_id.composer_line_qty,
@@ -69,10 +72,12 @@ class StockShipmentComposerLine(models.Model):
             ):
                 raise ValidationError(
                     _(
-                        "The quantity in the composer lines ({line_qty}) cannot be "
-                        "greater than the quantity in the move ({move_qty})."
+                        "The quantity in the composer lines ({line_qty}) for "
+                        "'{product_name}' cannot be greater than the quantity in the "
+                        "move ({move_qty})."
                     ).format(
                         line_qty=rec.move_id.composer_line_qty,
+                        product_name=rec.move_id.product_id.display_name,
                         move_qty=rec.product_uom_qty,
                     )
                 )

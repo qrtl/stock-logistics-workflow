@@ -16,7 +16,16 @@ class StockMove(models.Model):
     shipment_composer_ids = fields.Many2many(
         "stock.shipment.composer", compute="_compute_shipment_composer_ids"
     )
+    shipment_composer_id = fields.Many2one(
+        "stock.shipment.composer",
+        copy=False,
+        help="Technical field to record the linked shipment composer when composer "
+        "is being validated.",
+    )
     composer_line_qty = fields.Float(compute="_compute_composer_line_qty", store=True)
+    composer_unallocated_qty = fields.Float(
+        compute="_compute_composer_line_qty", store=True
+    )
     move_split_origin_id = fields.Many2one(
         "stock.move",
         string="Split Origin Move",
@@ -33,20 +42,23 @@ class StockMove(models.Model):
         for rec in self:
             rec.composer_line_qty = sum(
                 rec.composer_line_ids.filtered(
-                    lambda x: x.state == "in_progress"
+                    lambda x: x.state in ["in_progress", "done"]
                 ).mapped("quantity")
             )
+            rec.composer_unallocated_qty = rec.product_uom_qty - rec.composer_line_qty
 
     @api.model_create_multi
     def create(self, vals_list):
-        res = super().create(vals_list)
-        if len(res) == 1 and res.move_split_origin_id:
-            group_lines = res.move_split_origin_id.composer_line_ids.filtered(
+        new_move = super().create(vals_list)
+        origin_move = new_move.move_split_origin_id
+        if len(new_move) == 1 and origin_move:
+            composer_lines = origin_move.composer_line_ids.filtered(
                 lambda x: x.state not in ["done", "cancel"]
+                and x.composer_id != origin_move.shipment_composer_id
             )
-            if group_lines:
-                group_lines.move_id = res.id
-        return res
+            if composer_lines:
+                composer_lines.move_id = new_move
+        return new_move
 
     def _split(self, qty, restrict_partner_id=False):
         res = super()._split(qty, restrict_partner_id=restrict_partner_id)
@@ -70,7 +82,7 @@ class StockMove(models.Model):
                         and "%s " % move.sale_line_id.name
                         or move.product_id.display_name
                         or "",
-                        "(%s)" % move.product_uom_qty,
+                        "(%s)" % move.composer_unallocated_qty,
                     ),
                 )
             )
