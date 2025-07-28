@@ -266,7 +266,7 @@
         <field name="name">stock.shipment.composer.filter</field>
         <field name="model">stock.shipment.composer</field>
         <field name="arch" type="xml">
-            <search string="Search Stock Gransfer Group">
+            <search string="Search Stock Composers">
                 <field
                     name="name"
                     string="Shipment Composer"

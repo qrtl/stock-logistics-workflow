@@ -1,7 +1,9 @@
 # Copyright 2025 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl)
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools.float_utils import float_compare
 
 
 class StockMove(models.Model):
@@ -14,7 +16,9 @@ class StockMove(models.Model):
         copy=False,
     )
     shipment_composer_ids = fields.Many2many(
-        "stock.shipment.composer", compute="_compute_shipment_composer_ids"
+        "stock.shipment.composer",
+        string="Shipment Composers",
+        compute="_compute_shipment_composer_ids",
     )
     shipment_composer_id = fields.Many2one(
         "stock.shipment.composer",
@@ -46,6 +50,29 @@ class StockMove(models.Model):
                 ).mapped("quantity")
             )
             rec.composer_unallocated_qty = rec.product_uom_qty - rec.composer_line_qty
+
+    @api.constrains("composer_line_qty", "product_uom_qty", "state")
+    def _check_composer_total_qty(self):
+        for move in self.filtered(lambda m: m.state not in ("done", "cancel")):
+            if (
+                float_compare(
+                    move.composer_line_qty,
+                    move.product_uom_qty,
+                    precision_rounding=move.product_uom.rounding,
+                )
+                > 0
+            ):
+                raise ValidationError(
+                    _(
+                        "Total composer quantity (%(line_qty)s) for '%(product)s' "
+                        "cannot exceed the move quantity (%(move_qty)s)."
+                    )
+                    % {
+                        "line_qty": move.composer_line_qty,
+                        "product": move.product_id.display_name,
+                        "move_qty": move.product_uom_qty,
+                    }
+                )
 
     @api.model_create_multi
     def create(self, vals_list):

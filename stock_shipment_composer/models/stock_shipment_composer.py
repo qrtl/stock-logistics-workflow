@@ -92,8 +92,15 @@ class StockShipmentComposer(models.Model):
         precompute=True,
     )
     move_ids = fields.Many2many("stock.move", compute="_compute_move_ids", store=True)
-    sale_line_ids = fields.Many2many("sale.order.line", compute="_compute_move_ids")
-    show_check_availability = fields.Boolean(compute="_compute_move_ids")
+    sale_line_ids = fields.Many2many(
+        "sale.order.line",
+        compute="_compute_move_ids",
+        compute_sudo=True,
+    )
+    show_check_availability = fields.Boolean(
+        compute="_compute_move_ids",
+        compute_sudo=True,
+    )
     show_validate = fields.Boolean(compute="_compute_show_validate")
     date_done = fields.Datetime(
         "Date of Validation",
