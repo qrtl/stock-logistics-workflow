@@ -2,4 +2,4 @@ Compose custom outbound “shipments” by reshuffling stock moves before the de
 validated.
 
 Useful when you need to aggregate stock moves from multiple deliveries into one
-shipment.
+shipment. You can also plan multiple shipments for a stock move record.

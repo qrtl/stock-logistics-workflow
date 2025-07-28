@@ -372,20 +372,52 @@ ul.auto-toc {
 <p>Compose custom outbound “shipments” by reshuffling stock moves before
 the delivery is validated.</p>
 <p>Useful when you need to aggregate stock moves from multiple deliveries
-into one shipment.</p>
+into one shipment. You can also plan multiple shipments for a stock move
+record.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#bug-tracker" id="toc-entry-1">Bug Tracker</a></li>
-<li><a class="reference internal" href="#credits" id="toc-entry-2">Credits</a><ul>
-<li><a class="reference internal" href="#authors" id="toc-entry-3">Authors</a></li>
-<li><a class="reference internal" href="#maintainers" id="toc-entry-4">Maintainers</a></li>
+<li><a class="reference internal" href="#usage" id="toc-entry-1">Usage</a><ul>
+<li><a class="reference internal" href="#business-rules-behavior" id="toc-entry-2">Business Rules &amp; Behavior</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bug-tracker" id="toc-entry-3">Bug Tracker</a></li>
+<li><a class="reference internal" href="#credits" id="toc-entry-4">Credits</a><ul>
+<li><a class="reference internal" href="#authors" id="toc-entry-5">Authors</a></li>
+<li><a class="reference internal" href="#maintainers" id="toc-entry-6">Maintainers</a></li>
 </ul>
 </li>
 </ul>
 </div>
+<div class="section" id="usage">
+<h1><a class="toc-backref" href="#toc-entry-1">Usage</a></h1>
+<p>#. Go to <em>Inventory &gt; Operations &gt; Shipment Composers</em>. #. Create a
+Shipment Composer and set Partner and Operation Type. #. Add Composer
+Lines, selecting eligible moves and entering Quantity to ship. Adjust
+Declared Price if needed. #. Confirm to move to In Progress and confirm
+underlying pickings. #. Check Availability to reserve stock. #. When all
+lines are sufficiently reserved, Validate. The module fills qty_done,
+propagates dates, posts logs, and validates the pickings.</p>
+<div class="section" id="business-rules-behavior">
+<h2><a class="toc-backref" href="#toc-entry-2">Business Rules &amp; Behavior</a></h2>
+<ul class="simple">
+<li>A picking cannot be validated while any linked composer is active
+(draft/in_progress). Users must validate the composer first.</li>
+<li>Validation sets qty_done = reserved quantities (bounded by line
+quantity), ensuring consistency between reservations and done
+quantities.</li>
+<li>actual_date from the composer is written to all related pickings (and
+subsequently to move lines via standard flow if applicable).</li>
+<li>State is computed from moves; when any move tagged with this composer
+reaches done/cancel, the composer transitions to done and records
+date_done.</li>
+<li>Declared prices/amounts are tracked separately from sales prices for
+documentation needs.</li>
+</ul>
+</div>
+</div>
 <div class="section" id="bug-tracker">
-<h1><a class="toc-backref" href="#toc-entry-1">Bug Tracker</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-3">Bug Tracker</a></h1>
 <p>Bugs are tracked on <a class="reference external" href="https://github.com/OCA/stock-logistics-workflow/issues">GitHub Issues</a>.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
@@ -393,15 +425,15 @@ If you spotted it first, help us to smash it by providing a detailed and welcome
 <p>Do not contact contributors directly about support or help with technical issues.</p>
 </div>
 <div class="section" id="credits">
-<h1><a class="toc-backref" href="#toc-entry-2">Credits</a></h1>
+<h1><a class="toc-backref" href="#toc-entry-4">Credits</a></h1>
 <div class="section" id="authors">
-<h2><a class="toc-backref" href="#toc-entry-3">Authors</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-5">Authors</a></h2>
 <ul class="simple">
 <li>Quartile</li>
 </ul>
 </div>
 <div class="section" id="maintainers">
-<h2><a class="toc-backref" href="#toc-entry-4">Maintainers</a></h2>
+<h2><a class="toc-backref" href="#toc-entry-6">Maintainers</a></h2>
 <p>This module is maintained by the OCA.</p>
 <a class="reference external image-reference" href="https://odoo-community.org"><img alt="Odoo Community Association" src="https://odoo-community.org/logo.png" /></a>
 <p>OCA, or the Odoo Community Association, is a nonprofit organization whose
