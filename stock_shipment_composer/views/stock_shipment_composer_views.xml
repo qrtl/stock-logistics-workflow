@@ -122,16 +122,17 @@
                     </group>
                     <notebook>
                         <page string="Composer Lines">
-                            <group>
-                                <div colspan="4">
-                                    <span>Declared Total Amount: </span><strong><field
+                            <group col="4">
+                                <div colspan="4" style="white-space:normal;">
+                                    Declared&#160;Total&#160;Amount:
+                                    <strong>
+                                        <field
                                             name="amount_declared_total"
                                             class="oe_inline"
-                                        /></strong>
-                                    <span> (Sales Amount: </span><field
-                                        name="amount_total"
-                                        class="oe_inline"
-                                    /><span>)</span>
+                                        />
+                                    </strong>
+                                    (Sales&#160;Amount:
+                                    <field name="amount_total" class="oe_inline" />)
                                 </div>
                             </group>
                             <field
@@ -159,13 +160,12 @@
                                         name="action_show_details"
                                         type="object"
                                         icon="fa-list"
-                                        width="0.1"
                                         title="Details"
                                     />
                                     <field
                                         name="product_uom_qty"
                                         string="Demand"
-                                        optionl="hide"
+                                        optional="hide"
                                     />
                                     <field
                                         name="reserved_availability"
