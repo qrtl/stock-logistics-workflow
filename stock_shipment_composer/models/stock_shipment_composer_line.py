@@ -35,6 +35,12 @@ class StockShipmentComposerLine(models.Model):
     currency_id = fields.Many2one(related="composer_id.currency_id")
     state = fields.Selection(related="composer_id.state", store=True)
     reserved_enough = fields.Boolean(compute="_compute_reserved_enough")
+    location_id = fields.Many2one(
+        related="move_id.location_id", string="Source Location"
+    )
+    location_dest_id = fields.Many2one(
+        related="move_id.location_dest_id", string="Destination Location"
+    )
 
     @api.depends("move_id", "move_id.sale_line_id.price_unit")
     def _compute_price_declared(self):

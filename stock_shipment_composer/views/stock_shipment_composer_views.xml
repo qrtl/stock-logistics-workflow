@@ -156,6 +156,16 @@
                                         help="The number in brackets represents the unallocated quantity to composers in 'In Progress' or 'Done' states."
                                     />
                                     <field name="picking_id" optional="show" />
+                                    <field
+                                        name="location_id"
+                                        string="From"
+                                        optional="hide"
+                                    />
+                                    <field
+                                        name="location_dest_id"
+                                        string="To"
+                                        optional="hide"
+                                    />
                                     <field name="quantity" />
                                     <button
                                         name="action_show_details"
