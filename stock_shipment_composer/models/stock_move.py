@@ -65,7 +65,7 @@ class StockMove(models.Model):
                 raise ValidationError(
                     _(
                         "Total composer quantity (%(line_qty)s) for '%(product)s' "
-                        "cannot exceed the move quantity (%(move_qty)s)."
+                        "cannot exceed the demand quantity (%(move_qty)s)."
                     )
                     % {
                         "line_qty": move.composer_line_qty,
