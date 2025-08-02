@@ -21,7 +21,7 @@ class StockShipmentComposerLine(models.Model):
         readonly=False,
         required=True,
     )
-    quantity = fields.Float(required=True)
+    quantity = fields.Float(compute="_compute_quantity", store="True", readonly=False)
     product_uom_qty = fields.Float(related="move_id.product_uom_qty")
     reserved_availability = fields.Float(related="move_id.reserved_availability")
     quantity_done = fields.Float(related="move_id.quantity_done")
@@ -46,6 +46,11 @@ class StockShipmentComposerLine(models.Model):
     def _compute_price_declared(self):
         for rec in self:
             rec.price_declared = rec.move_id.sale_line_id.price_unit
+
+    @api.depends("move_id")
+    def _compute_quantity(self):
+        for rec in self:
+            rec.quantity = rec.move_id.composer_unallocated_qty
 
     @api.depends("quantity", "price_unit", "price_declared")
     def _compute_amount(self):
