@@ -95,6 +95,7 @@
                             />
                             <field
                                 name="picking_type_id"
+                                domain="[('code','=','outgoing')]"
                                 attrs="{'readonly':[('line_ids','!=',[])]}"
                                 force_save="1"
                             />
