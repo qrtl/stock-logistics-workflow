@@ -54,6 +54,10 @@ class StockMove(models.Model):
     @api.constrains("composer_line_qty", "product_uom_qty", "state")
     def _check_composer_total_qty(self):
         for move in self.filtered(lambda m: m.state not in ("done", "cancel")):
+            # POs with negative quantities (e.g., returns) get bitten at confirm without
+            # this condition, as a move is temporarily created with a negative qty
+            if not move.composer_line_qty or move.product_uom_qty < 0:
+                continue
             if (
                 float_compare(
                     move.composer_line_qty,
